@@ -31,12 +31,19 @@ public class EstadisticaService {
         resultado.put("totalVotaciones", total);
 
         for (CandidatoDTO c : candidatos) {
-            double porcentaje = total == 0 ? 0 : (c.getVotos() * 100.0 / total);
-            resultado.put(c.getNombre(), porcentaje);
+            Map<String, Object> datosCandidato = new LinkedHashMap<>();
+            datosCandidato.put("votos", c.getVotos());
+            datosCandidato.put("porcentaje", total == 0 ? 0 : (c.getVotos() * 100.0 / total));
+            resultado.put(c.getNombre(), datosCandidato);
         }
 
         int blancos = (int) repo.findAllVotos().stream().filter(v -> v.getCandidatoNumero() == 6).count();
-        resultado.put("Voto en blanco", total == 0 ? 0 : (blancos * 100.0 / total));
+        
+        Map<String, Object> datosBlanco = new LinkedHashMap<>();
+        datosBlanco.put("votos", blancos);
+        datosBlanco.put("porcentaje", total == 0 ? 0 : (blancos * 100.0 / total));
+        
+        resultado.put("Voto en blanco", datosBlanco);
 
         return resultado;
     }

@@ -5,37 +5,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule; 
 
 public class StorageJSON {
 
-	private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-//Leer Json
-	public static <T> List<T> load(String FILE_PATH, Class<T> tipo) {
-		System.out.println("ingresa a load: " + FILE_PATH);
+    // Leer Json
+    public static <T> List<T> load(String FILE_PATH, Class<T> tipo) {
+        try {
+            File file = new File(FILE_PATH);
+            if (!file.exists()) {
+                return new ArrayList<>();
+            }
+            return mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(List.class, tipo));
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error cargando JSON: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
 
-		try {
-			File file = new File(FILE_PATH);
-			if (!file.exists()) {
-				System.out.println("ruta: " + FILE_PATH);
-				return new ArrayList<>();
-			}
-			return mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(List.class, tipo));
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("error load json: " + e.getMessage());
-
-			return new ArrayList<>();
-		}
-	}
-
-	// Guardar Json
-	public static <T> void save(String FILE_PATH, List<T> datos) {
-		try {
-			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(FILE_PATH), datos);
-		} catch (Exception e) {
-			System.out.println("error save json: " + e.getMessage());
-			e.printStackTrace();
-		}
-	}
+    // Guardar Json
+    public static <T> void save(String FILE_PATH, List<T> datos) {
+        try {
+            File file = new File(FILE_PATH);
+            if (file.getParentFile() != null && !file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+            
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, datos);
+        } catch (Exception e) {
+            System.out.println("Error guardando JSON: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package co.edu.udistrital.sisVotacion.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.springframework.stereotype.Service;
 
@@ -46,6 +48,30 @@ public class VotacionService {
     }
 
     public int totalVotos() {
-        return repo.findAllVotos().size();
+        int sumaCandidatos = repo.findAllCandidatos().stream()
+                                 .mapToInt(CandidatoDTO::getVotos)
+                                 .sum();
+        
+        int conteoBlancos = (int) repo.findAllVotos().stream()
+                                      .filter(v -> v.getCandidatoNumero() == 6)
+                                      .count();
+                                      
+        return sumaCandidatos + conteoBlancos;
+    }
+
+    public Map<String, Integer> obtenerResultados() {
+        List<CandidatoDTO> candidatos = repo.findAllCandidatos();
+        Map<String, Integer> resultados = new LinkedHashMap<>();
+
+        for (CandidatoDTO c : candidatos) {
+            resultados.put(c.getNombre(), c.getVotos());
+        }
+
+        int blancos = (int) repo.findAllVotos().stream()
+                                .filter(v -> v.getCandidatoNumero() == 6)
+                                .count();
+        resultados.put("Voto en blanco", blancos);
+
+        return resultados;
     }
 }
